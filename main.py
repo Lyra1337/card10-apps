@@ -7,8 +7,24 @@ import leds
 import buttons
 import ujson
 import os
+import leds
+import power
 
 CONFIG_NAME = "clock.json"
+
+
+def update_charging_indicator():
+    chargeVoltage = power.read_chargein_voltage()
+    if chargeVoltage < 1:
+        leds.set(10, [ 0, 0, 0 ])
+    else:
+        batteryVoltage = power.read_battery_voltage()
+        if batteryVoltage < 4.15:
+            leds.set(10, [ 42, 0, 0 ])
+        else:
+            leds.set(10, [ 0, 42, 0 ])
+    
+    utime.sleep_ms(250)
 
 
 class Time:
@@ -184,6 +200,8 @@ class Clock:
                 button_pressed = False
                 while True:
                     self.updateClock(disp)
+                    update_charging_indicator()
+
                     if self.run_once:
                         break
 
