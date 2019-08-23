@@ -1,0 +1,1 @@
+xcopy battery\*.* D:\apps\battery\*.* /S /E /F /Y

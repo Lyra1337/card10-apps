@@ -16,13 +16,15 @@ while True:
     )
     
     if pressed & buttons.BOTTOM_LEFT != 0:
-        brightness = max(1, brightness / 2)
+        brightness = max(1, brightness - 3)
+        utime.sleep_ms(10)
 
     if pressed & buttons.BOTTOM_RIGHT != 0:
-        brightness = min(255, brightness * 4)
+        brightness = min(255, brightness + 3)
+        utime.sleep_ms(10)
 
-    minVoltage = 3.4
-    # minVoltage = 4
+    minVoltage = 3.42
+    # minVoltage = 3.9
     maxVoltage = 4.1
     voltage = os.read_battery()
     batteryPercent = (voltage - minVoltage) / (maxVoltage - minVoltage)
@@ -31,7 +33,7 @@ while True:
 
     lastIndex = round(batteryLevel * 11)
 
-    leds.clear()
+    # leds.clear()
 
     for i in range(0, lastIndex):
         leds.prep(10 - i, [0, brightness, 0])
