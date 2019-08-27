@@ -6,6 +6,7 @@ import os
 import sys
 import buttons
 import power
+import light_sensor
 
 def update_leds(batteryLevel):
     lastIndex = round(batteryLevel * 11)
@@ -40,6 +41,9 @@ maxVoltage = 4.1
 disp = display.open()
 mode = 0 # 0 = Voltage & Percentage | 1 = 
 waitAfterUpdate = False
+light_sensor.start()
+mode = math.floor(4 * min(8, max(1, light_sensor.get_reading() / 10)))
+light_sensor.stop()
 
 display_logo()
 
@@ -51,29 +55,33 @@ while True:
     )
     
     if pressed & buttons.BOTTOM_LEFT != 0:
-        brightness = max(0, brightness - 3)
-        waitAfterUpdate = True
+        brightness = max(0, brightness - round(1 + brightness * 0.1))
+        utime.sleep_ms(20)
 
     if pressed & buttons.BOTTOM_RIGHT != 0:
-        brightness = min(255, brightness + 3)
-        waitAfterUpdate = True
+        brightness = min(255, brightness + round(1 + brightness * 0.1))
+        utime.sleep_ms(20)
 
     if pressed & buttons.TOP_RIGHT != 0:
         mode = mode + 1
-        if mode > 2:
-            mode = 0
         waitAfterUpdate = True
     
     voltage = os.read_battery()
-    batteryPercent = (voltage - minVoltage) / (maxVoltage - minVoltage)
+    batteryPercent = (voltage - minVoltage) ** 1.35 / (maxVoltage - minVoltage) ** 1.35
+    
     batteryLevel = max(0, min(1, batteryPercent))
+    mode = mode % ((4 - 1) + 4 * 8)
+    actualMode = mode % 4
 
-    if mode == 0:
+    if actualMode < 3:
+        disp.backlight(math.floor(mode / 4 + 1))
+
+    if actualMode == 0:
         disp.print("Battery:")
         disp.print("%f%%" % (batteryLevel * 100), posy = 20)
         disp.print("%fV" % voltage, posy = 40, posx = 14)
 
-    if mode == 1:
+    if actualMode == 1:
         chargeCurrent = power.read_chargein_current()
         chargeVoltage = power.read_chargein_voltage()
         disp.print("Charging:", posy = 0)
@@ -84,11 +92,15 @@ while True:
         disp.print("Voltage:", posy = 40)
         disp.print("%fV" % chargeVoltage, posy = 60)
 
-    if mode == 2:
+    if actualMode == 2:
         batteryCurrent = power.read_battery_current()
         disp.print("Drawing:", posy = 0)
         disp.print("%fA" % batteryCurrent, posy = 20)
         
+    if actualMode == 3:
+        leds.dim_top(math.floor(1 + mode / 4))
+        disp.backlight(0)
+
     update_leds(batteryLevel)
     update_rockets(batteryLevel)
 

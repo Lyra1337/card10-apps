@@ -12,7 +12,6 @@ import power
 
 CONFIG_NAME = "clock.json"
 
-
 def update_charging_indicator():
     chargeVoltage = power.read_chargein_voltage()
     if chargeVoltage < 1:
@@ -25,7 +24,6 @@ def update_charging_indicator():
             leds.set(10, [ 0, 42, 0 ])
     
     utime.sleep_ms(250)
-
 
 class Time:
     def __init__(self, start=0):
@@ -201,7 +199,7 @@ class Clock:
                 while True:
                     self.updateClock(disp)
                     update_charging_indicator()
-
+                    
                     if self.run_once:
                         break
 
